@@ -74,7 +74,8 @@ canvas{display:block}
   border:1px solid #9f814a;outline:none;margin:15px auto;
 }
 .action{
-  display:block;margin:12px auto 0;padding:12px 30px;
+  display:block;width:100%;max-width:260px;
+  margin:12px auto 0;padding:13px 20px;
   background:linear-gradient(110deg,#8a6938,#e1c58a,#8a6938);
   color:#16130d;border:0;letter-spacing:1px;cursor:pointer;
   font-family:"Malgun Gothic",sans-serif;font-size:13px;
@@ -83,12 +84,31 @@ canvas{display:block}
   background:transparent;color:#c5b38d;
   border:1px solid #76613e;
 }
+
+/* 新增：照片保存按钮 */
+#savePhotoBtn{
+  background:linear-gradient(110deg,#80602f,#f0d69b,#a17a3d);
+  color:#17120a;
+  font-weight:bold;
+  box-shadow:0 0 20px rgba(218,181,108,.2);
+}
+#savePhotoBtn:disabled{
+  opacity:.65;
+  cursor:wait;
+}
+#saveHint{
+  color:#c5b38d;
+  font-size:11px;
+  margin-top:12px;
+  line-height:1.8;
+}
+
 #close{
   position:absolute;right:13px;top:10px;background:none;border:0;
   color:#cbb88e;font-size:25px;cursor:pointer;z-index:2;
 }
 #giftPhoto{
-  display:block;width:100%;max-height:55vh;
+  display:block;width:100%;max-height:45vh;
   object-fit:contain;margin:15px auto;
   border:1px solid rgba(220,190,125,.3);
 }
@@ -118,7 +138,9 @@ canvas{display:block}
     <p>소원이 이루어지는 작은 세상</p>
   </div>
 
-  <div id="status">반짝이는 별빛이 모이고 있어요 · 크리스마스의 세계에 오신 것을 환영합니다</div>
+  <div id="status">
+    반짝이는 별빛이 모이고 있어요 · 크리스마스의 세계에 오신 것을 환영합니다
+  </div>
 
   <div class="controls">
     <button class="control" id="musicBtn">♫ 피아노 음악 재생</button>
@@ -133,6 +155,7 @@ canvas{display:block}
   <div class="panel">
     <button id="close">×</button>
 
+    <!-- 第一步：生日验证 -->
     <div id="stepBirthday">
       <h2>생일 인증</h2>
       <p>생일의 월과 일을 입력해 주세요.<br>예: 3월 14일은 0314를 입력해 주세요.</p>
@@ -141,21 +164,34 @@ canvas{display:block}
       <p id="errorText" style="color:#d78b7c;font-size:12px"></p>
     </div>
 
+    <!-- 第二步：祝福语 -->
     <div id="stepGreeting" style="display:none">
       <h2 id="greetingTitle">A LITTLE WISH</h2>
       <p id="greetingText"></p>
       <button class="action" id="nextBtn">다음</button>
     </div>
 
+    <!-- 第三步：礼物照片 -->
     <div id="stepPhoto" style="display:none">
       <h2 id="photoTitle">A GIFT FOR YOU</h2>
+
       <div id="photoContent"></div>
+
+      <!-- 新增：保存照片 -->
+      <button class="action" id="savePhotoBtn">
+        ↓ 사진을 휴대폰에 저장하기
+      </button>
+
+      <p id="saveHint">
+        소중한 선물을 휴대폰에 간직하세요 ♡
+      </p>
+
       <button class="action secondary" id="finishBtn">닫기</button>
     </div>
   </div>
 </div>
 
-<!-- 圣诞音乐：christmas-joy.mp3 -->
+<!-- 圣诞音乐 -->
 <audio id="christmasMusic" loop preload="auto">
   <source src="./christmas-joy.mp3" type="audio/mpeg">
 </audio>
@@ -843,7 +879,7 @@ renderer.domElement.addEventListener("touchend",()=>{
 });
 
 
-/* 9. 礼物流程：生日 → 祝福语 → 礼物照片 */
+/* 9. 礼物流程 */
 
 const modal=document.getElementById("modal");
 const birthdayStep=document.getElementById("stepBirthday");
@@ -863,6 +899,8 @@ function openGift(index){
 
   document.getElementById("birthdayInput").value="";
   document.getElementById("errorText").textContent="";
+  document.getElementById("saveHint").textContent=
+    "소중한 선물을 휴대폰에 간직하세요 ♡";
 
   showStep("birthday");
   modal.style.display="flex";
@@ -911,9 +949,21 @@ document.getElementById("nextBtn").onclick=()=>{
     missing.textContent=
       "아직 선물 사진이 등록되지 않았어요.\nGitHub의 gifts 폴더에 사진을 업로드해 주세요.";
     photoContent.appendChild(missing);
+
+    document.getElementById("savePhotoBtn").disabled=true;
+    document.getElementById("saveHint").textContent=
+      "사진을 먼저 등록해 주세요.";
   };
 
+  img.onload=()=>{
+    document.getElementById("savePhotoBtn").disabled=false;
+    document.getElementById("saveHint").textContent=
+      "소중한 선물을 휴대폰에 간직하세요 ♡";
+  };
+
+  document.getElementById("savePhotoBtn").disabled=true;
   photoContent.appendChild(img);
+
   showStep("photo");
 };
 
@@ -930,7 +980,114 @@ document.getElementById("close").onclick=()=>{
 };
 
 
-/* 10. 粒子散开与聚合 */
+/* 10. 新增：保存照片到手机 */
+
+const savePhotoBtn=document.getElementById("savePhotoBtn");
+const saveHint=document.getElementById("saveHint");
+
+savePhotoBtn.onclick=async()=>{
+  const data=giftsData[selectedGift];
+
+  if(!data)return;
+
+  savePhotoBtn.disabled=true;
+  savePhotoBtn.textContent="사진을 준비하고 있어요...";
+
+  try{
+    const response=await fetch(data.image);
+
+    if(!response.ok){
+      throw new Error("Photo could not be loaded");
+    }
+
+    const blob=await response.blob();
+
+    const file=new File(
+      [blob],
+      "Christmas-Gift-"+(selectedGift+1)+".jpg",
+      {type:blob.type||"image/jpeg"}
+    );
+
+    /*
+      手机支持文件分享时：
+      打开系统分享菜单。
+      iPhone 用户可以选择“存储图像”。
+    */
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ){
+      await navigator.share({
+        files:[file],
+        title:"My Christmas Gift",
+        text:"A little Christmas gift for you ♡"
+      });
+
+      saveHint.textContent="선물 사진을 공유하거나 저장해 주세요 ♡";
+
+    }else{
+      /*
+        其他浏览器：
+        使用下载方式保存照片。
+      */
+      const objectURL=URL.createObjectURL(blob);
+      const link=document.createElement("a");
+
+      link.href=objectURL;
+      link.download="Christmas-Gift-"+(selectedGift+1)+".jpg";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setTimeout(()=>{
+        URL.revokeObjectURL(objectURL);
+      },10000);
+
+      saveHint.textContent=
+        "사진을 다운로드했어요! 휴대폰의 다운로드 폴더를 확인해 주세요.";
+    }
+
+  }catch(error){
+    if(error.name==="AbortError"){
+      saveHint.textContent="저장이 취소되었어요. 다시 시도할 수 있어요.";
+    }else{
+      console.error("照片保存失败:",error);
+
+      /*
+        下载失败时，尝试直接打开照片，
+        让用户使用手机菜单保存。
+      */
+      try{
+        const response=await fetch(data.image);
+        if(!response.ok)throw new Error("Image unavailable");
+
+        const blob=await response.blob();
+        const url=URL.createObjectURL(blob);
+        window.open(url,"_blank");
+
+        setTimeout(()=>{
+          URL.revokeObjectURL(url);
+        },60000);
+
+        saveHint.textContent=
+          "사진을 길게 누른 후 휴대폰에 저장해 주세요 ♡";
+
+      }catch(fallbackError){
+        saveHint.textContent=
+          "사진을 저장할 수 없어요. 인터넷 연결을 확인해 주세요.";
+      }
+    }
+
+  }finally{
+    savePhotoBtn.disabled=false;
+    savePhotoBtn.textContent="↓ 사진을 휴대폰에 저장하기";
+  }
+};
+
+
+/* 11. 粒子散开与聚合 */
 
 let scattered=false;
 let particleMix=0;
@@ -948,7 +1105,7 @@ document.getElementById("scatterBtn").onclick=()=>{
 };
 
 
-/* 11. Christmas Joy MP3 音乐 */
+/* 12. Christmas Joy MP3 音乐 */
 
 const musicBtn=document.getElementById("musicBtn");
 const christmasMusic=document.getElementById("christmasMusic");
@@ -989,7 +1146,7 @@ christmasMusic.addEventListener("error",()=>{
 });
 
 
-/* 12. 摄像头手势识别 */
+/* 13. 摄像头手势识别 */
 
 let handLandmarker=null;
 let cameraStream=null;
@@ -1129,7 +1286,7 @@ function detectHands(){
 }
 
 
-/* 13. 重置视角 */
+/* 14. 重置视角 */
 
 document.getElementById("resetBtn").onclick=()=>{
   targetRotation=0;
@@ -1142,7 +1299,7 @@ document.getElementById("resetBtn").onclick=()=>{
 };
 
 
-/* 14. 动画 */
+/* 15. 动画 */
 
 const clock=new THREE.Clock();
 
@@ -1215,7 +1372,7 @@ function animate(){
 animate();
 
 
-/* 15. 屏幕适配 */
+/* 16. 屏幕适配 */
 
 window.addEventListener("resize",()=>{
   camera.aspect=innerWidth/innerHeight;
@@ -1226,7 +1383,7 @@ window.addEventListener("resize",()=>{
 });
 
 
-/* 16. 初始状态 */
+/* 17. 初始状态 */
 
 document.getElementById("status").textContent=
   "반짝이는 크리스마스의 세계에 오신 것을 환영합니다";
