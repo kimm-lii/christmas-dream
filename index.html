@@ -128,12 +128,11 @@ canvas{display:block}
   </div>
 </div>
 
-<!-- 礼物弹窗：生日验证 → 祝福语 → 礼物照片 -->
+<!-- 礼物弹窗 -->
 <div id="modal">
   <div class="panel">
     <button id="close">×</button>
 
-    <!-- 第一步：生日验证 -->
     <div id="stepBirthday">
       <h2>생일 인증</h2>
       <p>생일의 월과 일을 입력해 주세요.<br>예: 3월 14일은 0314를 입력해 주세요.</p>
@@ -142,14 +141,12 @@ canvas{display:block}
       <p id="errorText" style="color:#d78b7c;font-size:12px"></p>
     </div>
 
-    <!-- 第二步：祝福语 -->
     <div id="stepGreeting" style="display:none">
       <h2 id="greetingTitle">A LITTLE WISH</h2>
       <p id="greetingText"></p>
       <button class="action" id="nextBtn">다음</button>
     </div>
 
-    <!-- 第三步：礼物照片 -->
     <div id="stepPhoto" style="display:none">
       <h2 id="photoTitle">A GIFT FOR YOU</h2>
       <div id="photoContent"></div>
@@ -158,9 +155,9 @@ canvas{display:block}
   </div>
 </div>
 
-<!-- 音乐文件：请上传到 index.html 同一目录 -->
+<!-- 圣诞音乐：christmas-joy.mp3 -->
 <audio id="christmasMusic" loop preload="auto">
-  <source src="./We%20Wish%20You%20a%20Merry%20Christmas.mp3" type="audio/mpeg">
+  <source src="./christmas-joy.mp3" type="audio/mpeg">
 </audio>
 
 <video id="cameraVideo" autoplay playsinline muted></video>
@@ -587,7 +584,6 @@ function makeGift(index,x,z,rotation){
   body.position.y=size*.38;
   group.add(body);
 
-  /* 左右侧面缎带 */
   [-1,1].forEach(side=>{
     const sideRibbon=new THREE.Mesh(
       new THREE.BoxGeometry(size*.018,size*.78,size*.15),
@@ -598,7 +594,6 @@ function makeGift(index,x,z,rotation){
     group.add(sideRibbon);
   });
 
-  /* 盒盖 */
   const hinge=new THREE.Group();
   hinge.position.set(0,size*.76,-size*.49);
   group.add(hinge);
@@ -611,7 +606,6 @@ function makeGift(index,x,z,rotation){
   lid.position.set(0,size*.09,size*.49);
   hinge.add(lid);
 
-  /* 盒盖侧面缎带 */
   [-1,1].forEach(side=>{
     const lidSideRibbon=new THREE.Mesh(
       new THREE.BoxGeometry(size*.018,size*.19,size*.15),
@@ -627,7 +621,6 @@ function makeGift(index,x,z,rotation){
     hinge.add(lidSideRibbon);
   });
 
-  /* 蝴蝶结 */
   if(index===3){
     const decoration=new THREE.Mesh(
       new THREE.OctahedronGeometry(size*.18),
@@ -659,7 +652,6 @@ function makeGift(index,x,z,rotation){
     group.add(knot);
   }
 
-  /* 第三个礼物盒的珍珠装饰 */
   if(index===2){
     const pearlMaterial=new THREE.MeshStandardMaterial({
       color:0xfff1d4,
@@ -685,7 +677,6 @@ function makeGift(index,x,z,rotation){
     }
   }
 
-  /* 正面标签：保留🎄，韩文名字放大 */
   const labelCanvas=document.createElement("canvas");
   labelCanvas.width=640;
   labelCanvas.height=200;
@@ -728,7 +719,6 @@ function makeGift(index,x,z,rotation){
   giftObjects.push(group);
 }
 
-/* 礼物盒位置保持原样 */
 makeGift(0,-3.0,.1,-.16);
 makeGift(1,-1.25,1.8,.24);
 makeGift(2,.85,.25,-.12);
@@ -892,17 +882,14 @@ document.getElementById("verifyBtn").onclick=()=>{
     return;
   }
 
-  /* 验证成功：先显示祝福语 */
   document.getElementById("greetingTitle").textContent=data.title;
   document.getElementById("greetingText").textContent=data.greeting;
 
   showStep("greeting");
 
-  /* 打开对应礼物盒盖 */
   giftObjects[selectedGift].userData.open=true;
 };
 
-/* 祝福语页点击下一页，才加载礼物照片 */
 document.getElementById("nextBtn").onclick=()=>{
   const data=giftsData[selectedGift];
 
@@ -961,7 +948,7 @@ document.getElementById("scatterBtn").onclick=()=>{
 };
 
 
-/* 11. We Wish You a Merry Christmas MP3 音乐 */
+/* 11. Christmas Joy MP3 音乐 */
 
 const musicBtn=document.getElementById("musicBtn");
 const christmasMusic=document.getElementById("christmasMusic");
@@ -975,7 +962,7 @@ musicBtn.onclick=async()=>{
 
       musicBtn.textContent="♫ 피아노 음악 일시정지";
       document.getElementById("status").textContent=
-        "We Wish You a Merry Christmas · 피아노 음악이 흐르고 있어요";
+        "Christmas Joy · 크리스마스 음악이 흐르고 있어요";
 
     }catch(error){
       musicBtn.textContent="♫ 피아노 음악 재생";
@@ -989,7 +976,7 @@ musicBtn.onclick=async()=>{
 
     musicBtn.textContent="♫ 피아노 음악 재생";
     document.getElementById("status").textContent=
-      "피아노 음악이 잠시 멈췄어요";
+      "크리스마스 음악이 잠시 멈췄어요";
   }
 };
 
