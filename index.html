@@ -85,7 +85,7 @@ canvas{display:block}
   border:1px solid #76613e;
 }
 
-/* 新增：照片保存按钮 */
+/* 照片保存按钮 */
 #savePhotoBtn{
   background:linear-gradient(110deg,#80602f,#f0d69b,#a17a3d);
   color:#17120a;
@@ -177,7 +177,6 @@ canvas{display:block}
 
       <div id="photoContent"></div>
 
-      <!-- 新增：保存照片 -->
       <button class="action" id="savePhotoBtn">
         ↓ 사진을 휴대폰에 저장하기
       </button>
@@ -235,9 +234,9 @@ const giftsData=[
   },
   {
     birthday:"0916",
-    name:"동생",
-    greeting:"🎅 동생아, 메리 크리스마스!\n멋지고 돈도 많이 벌고, 돈 걱정 없이 여유롭게 지내길 바라!\n\n영원히 사랑하는 영영 올림",
-    title:"🎄 동생",
+    name:"상윤",
+    greeting:"상윤, 메리 크리스마스! 🎄\n멋지고 돈도 많은 사람이 돼서 돈 걱정 없이 여유롭고 행복하게 지내길 바라요.\n\n영원히 사랑하는 영영 올림",
+    title:"🎄 상윤",
     image:"./gifts/gift4.jpg"
   }
 ];
@@ -586,7 +585,7 @@ const giftStyles=[
   {name:"아빠",color:0x641c2c,ribbon:0xe1c17d,size:1.25},
   {name:"엄마",color:0x124532,ribbon:0xd4b46c,size:.88},
   {name:"창윤",color:0xb99457,ribbon:0xf1e1bd,size:1.12},
-  {name:"동생",color:0x77658f,ribbon:0xe6d7f2,size:.95}
+  {name:"상윤",color:0x77658f,ribbon:0xe6d7f2,size:.95}
 ];
 
 const giftObjects=[];
@@ -980,7 +979,7 @@ document.getElementById("close").onclick=()=>{
 };
 
 
-/* 10. 新增：保存照片到手机 */
+/* 10. 保存照片到手机 */
 
 const savePhotoBtn=document.getElementById("savePhotoBtn");
 const saveHint=document.getElementById("saveHint");
@@ -1008,11 +1007,6 @@ savePhotoBtn.onclick=async()=>{
       {type:blob.type||"image/jpeg"}
     );
 
-    /*
-      手机支持文件分享时：
-      打开系统分享菜单。
-      iPhone 用户可以选择“存储图像”。
-    */
     if(
       navigator.share &&
       navigator.canShare &&
@@ -1027,10 +1021,6 @@ savePhotoBtn.onclick=async()=>{
       saveHint.textContent="선물 사진을 공유하거나 저장해 주세요 ♡";
 
     }else{
-      /*
-        其他浏览器：
-        使用下载方式保存照片。
-      */
       const objectURL=URL.createObjectURL(blob);
       const link=document.createElement("a");
 
@@ -1055,10 +1045,6 @@ savePhotoBtn.onclick=async()=>{
     }else{
       console.error("照片保存失败:",error);
 
-      /*
-        下载失败时，尝试直接打开照片，
-        让用户使用手机菜单保存。
-      */
       try{
         const response=await fetch(data.image);
         if(!response.ok)throw new Error("Image unavailable");
